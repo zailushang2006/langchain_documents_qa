@@ -1,0 +1,39 @@
+FROM continuumio/anaconda3:latest
+
+COPY . /military_qa
+
+WORKDIR /military_qa
+
+RUN apt-get update && apt-get install -y gnupg2 \
+    && gpg --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32 \
+    && gpg --export --armor 3B4FE6ACC0B21F32 | sudo apt-key add -
+
+RUN echo "\
+deb http://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse\n\
+deb http://mirrors.aliyun.com/ubuntu/ bionic-security main restricted universe multiverse\n\
+deb http://mirrors.aliyun.com/ubuntu/ bionic-updates main restricted universe multiverse\n\
+deb http://mirrors.aliyun.com/ubuntu/ bionic-proposed main restricted universe multiverse\n\
+deb http://mirrors.aliyun.com/ubuntu/ bionic-backports main restricted universe multiverse\n\
+deb-src http://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse\n\
+deb-src http://mirrors.aliyun.com/ubuntu/ bionic-security main restricted universe multiverse\n\
+deb-src http://mirrors.aliyun.com/ubuntu/ bionic-updates main restricted universe multiverse\n\
+deb-src http://mirrors.aliyun.com/ubuntu/ bionic-proposed main restricted universe multiverse\n\
+deb-src http://mirrors.aliyun.com/ubuntu/ bionic-backports main restricted universe multiverse"\
+>> /etc/apt/sources.list
+
+RUN apt-get update \
+    && apt-get upgrade \
+    && apt-get install build-essential \
+    && apt-get install g++ \
+    && apt-get install gcc
+
+RUN conda create -n chatgpt python=3.8 \
+    && conda activate chatgpt \
+    && pip install -r requirements.txt --default-timeout=1000 -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+EXPOSE 15001 15002
+
+VOLUME /military_qa/data
+VOLUME /military_qa/database
+
+CMD ["python", "documents_qa_api.py"]
