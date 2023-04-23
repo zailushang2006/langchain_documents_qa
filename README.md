@@ -62,12 +62,12 @@ python main.py
 
 ### 非streaming
 ```angular2html
-curl -H "Content-Type: application/json" -X POST "http://192.168.0.1:50001/documents_qa" -d '
+curl -H "Content-Type: application/json" -X POST "http://192.168.0.1:15001/documents_qa" -d '
 {
     "query": "朝鲜军队有多少人服役",
     "chat_history": [],
     "category": "strategy",
-    "stream": "true"
+    "stream": "false"
 }
 '
 ```

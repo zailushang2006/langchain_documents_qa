@@ -4,11 +4,8 @@ COPY . /military_qa
 
 WORKDIR /military_qa
 
-RUN apt-get update \
-    && apt-get upgrade \
-    && apt-get install build-essential \
-    && apt-get install g++ \
-    && apt-get install gcc
+RUN  yum -y install gcc gcc-c++ kernel-devel \
+    && yum install make
 
 RUN conda create -n chatgpt python=3.8 \
     && conda activate chatgpt \
