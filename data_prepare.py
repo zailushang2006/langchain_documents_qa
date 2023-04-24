@@ -2,10 +2,38 @@
 
 from typing import List, Optional
 from langchain.document_loaders import DirectoryLoader, UnstructuredFileLoader
+from langchain.document_loaders import UnstructuredPDFLoader, UnstructuredWordDocumentLoader, TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from config import *
+
+
+def load_dir(data_dir: Optional[str]):
+
+    pdf_texts = []
+    for file_name in os.listdir(data_dir):
+        print("-- pdf_file_name:", file_name)
+        if file_name.endswith(".pdf"):
+            pdf_file_path = os.path.join(data_dir, file_name)
+            print("-- pdf_file_path:", pdf_file_path)
+            pdf_loader = UnstructuredPDFLoader(pdf_file_path)
+            pdf_text = pdf_loader.load()
+        elif file_name.endswith(".docx"):
+            docx_file_path = os.path.join(data_dir, file_name)
+            print("-- docx_file_path:", docx_file_path)
+            docx_loader = UnstructuredWordDocumentLoader(docx_file_path)
+            pdf_text = docx_loader.load()
+        elif file_name.endswith(".txt"):
+            txt_file_path = os.path.join(data_dir, file_name)
+            print("-- txt_file_path:", txt_file_path)
+            txt_loader = TextLoader(txt_file_path)
+            pdf_text = txt_loader.load()
+        else:
+            print("file type not supported:", file_name)
+        pdf_texts += pdf_text
+
+    return pdf_texts
 
 
 def load_data_split(data_dir: Optional[str], chunk_size: Optional[int], chunk_overlap: Optional[int]):
@@ -19,9 +47,14 @@ def load_data_split(data_dir: Optional[str], chunk_size: Optional[int], chunk_ov
     # Load and process the data
     if data_dir is None:
         data_dir = Cfg.DATA_DIR
-    data_loader = DirectoryLoader(data_dir, glob="*.PDF")
-    documents = data_loader.load()
+    # data_loader = DirectoryLoader(data_dir, glob="*.PDF")
+    # documents = data_loader.load()
+
+    documents = load_dir(data_dir)
     print("number of documents:", len(documents))
+
+    if not documents:
+        raise ValueError("No documents found in {}".format(data_dir))
 
     if chunk_size is None:
         chunk_size = Cfg.CHUNK_SIZE
@@ -48,14 +81,16 @@ def load_data(texts: List[str], persist_dir: Optional[str], sub_dir: str):
 
     # Embed the texts
     embeddings = OpenAIEmbeddings(openai_api_key=os.environ["OPENAI_API_KEY"])
+    print("-- load embeddings function success:")
+
     vectordb = Chroma.from_documents(
         documents=texts,
         embedding=embeddings,
         persist_directory=persist_directory
     )
-
+    print("-- load vectordb function success:")
     vectordb.persist()
-
+    print("-- persist success:")
     return vectordb
 
 
@@ -73,14 +108,16 @@ def add_data(texts: List[str], persist_dir: Optional[str], sub_dir: str):
 
     # Embed the texts
     embeddings = OpenAIEmbeddings(openai_api_key=os.environ["OPENAI_API_KEY"])
+    print("-- load embedding function success:")
     vectordb = Chroma(
         persist_directory=persist_directory,
         embedding_function=embeddings
     )
+    print("-- load vectordb function success:")
     vectordb.add_documents(texts)
-
+    print("-- add documents success:")
     vectordb.persist()
-
+    print("-- persist success:")
     return vectordb
 
 

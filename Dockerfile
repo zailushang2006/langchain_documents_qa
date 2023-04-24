@@ -6,9 +6,9 @@ WORKDIR /military_qa
 
 RUN apt-get update \
     && apt-get upgrade \
-    && apt-get install build-essential \
-    && apt-get install g++ \
-    && apt-get install gcc
+    && apt-get -y install build-essential \
+    && apt-get -y install g++ \
+    && apt-get -y install gcc
 
 RUN conda create -n chatgpt python=3.8 \
     && conda activate chatgpt \

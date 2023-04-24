@@ -5,7 +5,7 @@ COPY . /military_qa
 WORKDIR /military_qa
 
 RUN  yum -y install gcc gcc-c++ kernel-devel \
-    && yum install make
+    && yum -y install make
 
 RUN conda create -n chatgpt python=3.8 \
     && conda activate chatgpt \

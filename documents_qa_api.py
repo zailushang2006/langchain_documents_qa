@@ -42,16 +42,16 @@ class DocumentsQA(Resource):
         #     stream = True if stream.lower() == 'true' else False
         # else:
         #     stream = False
-        # try:
-        result = conversation_qa(query, chat_history, category, stream)
-        return result
-        # except Exception as e:
-        #     print("-- exception: ", e)
-        #     return {
-        #                 "question": query,
-        #                 "chat_history": [],
-        #                 "answer": "没有从文档中找到相关答案。"
-        #             }
+        try:
+            result = conversation_qa(query, chat_history, category, stream)
+            return result
+        except Exception as e:
+            print("-- exception: ", e)
+            return {
+                        "question": query,
+                        "chat_history": [],
+                        "answer": "没有从文档中找到相关答案。"
+                    }
 
 
 api = Api(app)
